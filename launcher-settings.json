@@ -9,6 +9,14 @@
                         "command": "~/.claude/session-start-git-identity.sh"
                     }
                 ]
+            },
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/root/.claude/hooks/restore-config.sh"
+                    }
+                ]
             }
         ],
         "UserPromptSubmit": [
