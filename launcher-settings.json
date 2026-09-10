@@ -1,0 +1,39 @@
+{
+    "$schema": "https://json.schemastore.org/claude-code-settings.json",
+    "hooks": {
+        "SessionStart": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "~/.claude/session-start-git-identity.sh"
+                    }
+                ]
+            }
+        ],
+        "UserPromptSubmit": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/root/.claude/hooks/inject-constraints.py"
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "matcher": "",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "~/.claude/stop-hook-git-check.sh"
+                    }
+                ]
+            }
+        ]
+    },
+    "permissions": {
+        "allow": ["Skill"]
+    }
+}
