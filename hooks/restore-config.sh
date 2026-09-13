@@ -64,7 +64,7 @@ try:
 except (json.JSONDecodeError, OSError):
     exit(0)
 
-hook_cmd = "/root/.claude/hooks/inject-constraints.py"
+hook_cmd = str(Path.home() / ".claude" / "hooks" / "inject-constraints.py")
 ups = settings.setdefault("hooks", {}).setdefault("UserPromptSubmit", [])
 
 already = any(
