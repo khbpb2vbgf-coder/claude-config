@@ -44,6 +44,10 @@ mkdir -p "$CLAUDE_DIR/hooks"
 cp "$CLONE_DIR/hooks/inject-constraints.py" "$CLAUDE_DIR/hooks/inject-constraints.py" 2>/dev/null || true
 chmod +x "$CLAUDE_DIR/hooks/inject-constraints.py" 2>/dev/null || true
 
+# Restore Stop hook git-check
+cp "$CLONE_DIR/hooks/stop-hook-git-check.sh" "$CLAUDE_DIR/hooks/stop-hook-git-check.sh" 2>/dev/null || true
+chmod +x "$CLAUDE_DIR/hooks/stop-hook-git-check.sh" 2>/dev/null || true
+
 # Self-update: replace this script with the repo's latest version
 cp "$CLONE_DIR/hooks/restore-config.sh" "$CLAUDE_DIR/hooks/restore-config.sh" 2>/dev/null || true
 chmod +x "$CLAUDE_DIR/hooks/restore-config.sh" 2>/dev/null || true
