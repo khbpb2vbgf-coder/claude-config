@@ -5,7 +5,7 @@
 # - Retries the clone 3 times with backoff (transient network resilience)
 # - Updates this script itself from the repo (improvements propagate automatically)
 # - Re-registers the UserPromptSubmit injection hook if missing from
-#   launcher-settings.json (survives CCR resets of that file)
+#   settings.json (guards against the file being reset without our hook entry)
 #
 # Always exits 0 — never blocks session start.
 
@@ -52,13 +52,13 @@ chmod +x "$CLAUDE_DIR/hooks/stop-hook-git-check.sh" 2>/dev/null || true
 cp "$CLONE_DIR/hooks/restore-config.sh" "$CLAUDE_DIR/hooks/restore-config.sh" 2>/dev/null || true
 chmod +x "$CLAUDE_DIR/hooks/restore-config.sh" 2>/dev/null || true
 
-# Self-heal: re-register UserPromptSubmit hook if missing from launcher-settings.json
-# (guards against CCR resetting the file to a baseline without our hook entry)
+# Self-heal: re-register UserPromptSubmit hook if missing from settings.json
+# (guards against the file being reset to a baseline without our hook entry)
 python3 - <<'PYEOF'
 import json
 from pathlib import Path
 
-settings_path = Path.home() / ".claude" / "launcher-settings.json"
+settings_path = Path.home() / ".claude" / "settings.json"
 if not settings_path.exists():
     exit(0)
 
