@@ -56,6 +56,7 @@ chmod +x "$CLAUDE_DIR/hooks/restore-config.sh" 2>/dev/null || true
 # (guards against the file being reset to a baseline without our hook entry)
 python3 - <<'PYEOF'
 import json
+import os
 from pathlib import Path
 
 settings_path = Path.home() / ".claude" / "settings.json"
@@ -72,7 +73,7 @@ hook_cmd = str(Path.home() / ".claude" / "hooks" / "inject-constraints.py")
 ups = settings.setdefault("hooks", {}).setdefault("UserPromptSubmit", [])
 
 already = any(
-    any(h.get("command") == hook_cmd for h in entry.get("hooks", []))
+    any(os.path.expanduser(h.get("command", "")) == hook_cmd for h in entry.get("hooks", []))
     for entry in ups
 )
 
