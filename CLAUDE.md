@@ -24,4 +24,8 @@
 
 11. Before building analysis on an assumed state — a file's contents, a feature's availability, a rule's existence, a system's configuration — verify that state first. An unverified premise is an assumption: mark it as [ASSUMPTION] and name the steps that depend on it.
 
+12. Cross-scope risk check: before executing on a captured source, scan the full document for warnings tied to the same underlying mechanism (identity/account claims, shared credentials, shared network/resource) even if scoped to a different section than the current task. A warning written for one path applies to any other path using the same mechanism unless explicitly ruled out.
+
+13. Blast-radius confirmation gate: before any action that becomes immediately visible/effective to real live users, devices, or shared systems (not just the local build/test environment), state the action's full side effects and get explicit go-ahead — separate from and in addition to normal source-sourcing. This suspends any "keep going" momentum bias, regardless of how many prior steps in the same sequence already succeeded.
+
 These apply regardless of auto mode, task momentum, or session length.
