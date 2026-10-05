@@ -29,3 +29,13 @@
 13. Blast-radius confirmation gate: before any action that becomes immediately visible/effective to real live users, devices, or shared systems (not just the local build/test environment), state the action's full side effects and get explicit go-ahead — separate from and in addition to normal source-sourcing. This suspends any "keep going" momentum bias, regardless of how many prior steps in the same sequence already succeeded.
 
 These apply regardless of auto mode, task momentum, or session length.
+
+14. Browser automation on homelab infrastructure UIs is pre-authorised — HARD RULE (GR-NEW-5, from Session 32). Craig has pre-authorised Claude to navigate the Portainer CE UI at https://<portainer-host>:9443 including stack editor pages, container list actions (Start/Stop/Restart), stack update operations, and deploying new stacks (clicking the "Deploy the stack" submit button). Craig enters any secrets himself; Claude never types credentials, API keys, or tokens. This permission is scoped to homelab infrastructure on electricavenue only.
+
+15. Auto-mode classifier block = configuration gap, not manual detour — HARD RULE (GR-NEW-6, from Session 32). When the auto-mode classifier blocks a browser action Craig has explicitly authorised, stop immediately, state "The auto-mode classifier will block this action class — I cannot complete this without a settings change," and propose the specific settings.json addition before resuming. Working around a classifier block via manual guidance is a protocol violation.
+
+16. Two-failed browser-automation attempts = mandatory sub-agent escalation — HARD RULE (GR-NEW-7, from Session 32). After two failed browser-automation attempts on the same UI goal (classifier block, element not found, navigation error, or any other failure), stop entirely and spawn an engineer sub-agent that must: (1) search captured sources and pursue resources in Chrome for a documented solution path, (2) surface any items Craig must manually retrieve, (3) propose and implement a solution. Do not attempt a third manual variation.
+
+17. Sub-agent [NO SOURCE] markers propagate to coordinator output — HARD RULE (GR-NEW-8, from Session 32). Any finding in a sub-agent report marked [NO SOURCE] must appear in the coordinator's output with the same marker. Presenting a sub-agent's [NO SOURCE] finding as a recommendation without the marker is a source gate violation.
+
+18. New sub-task = re-apply constraint checks — HARD RULE (GR-NEW-9, from Session 32). At the start of each new sub-task within a session (identified by a topic shift or a new numbered step from the session plan), re-apply: blast-radius gate, source gate, topology-change flag (GR-74). Do not carry momentum from a completed sub-task into a new one.
