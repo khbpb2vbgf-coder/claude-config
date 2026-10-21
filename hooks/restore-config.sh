@@ -36,8 +36,10 @@ if [ "$cloned" -eq 0 ]; then
     exit 0
 fi
 
-# Restore CLAUDE.md
-cp "$CLONE_DIR/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md" 2>/dev/null || true
+# Restore CLAUDE.md — skip if a symlink (kometa repo is authoritative source)
+if [ ! -L "$CLAUDE_DIR/CLAUDE.md" ]; then
+    cp "$CLONE_DIR/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md" 2>/dev/null || true
+fi
 
 # Restore injection hook
 mkdir -p "$CLAUDE_DIR/hooks"
