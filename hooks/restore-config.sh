@@ -4,8 +4,8 @@
 # Self-healing behaviours:
 # - Retries the clone 3 times with backoff (transient network resilience)
 # - Updates this script itself from the repo (improvements propagate automatically)
-# - Re-registers the UserPromptSubmit injection hook if missing from
-#   settings.json (guards against the file being reset without our hook entry)
+# - Re-registers PreToolUse, PostToolBatch, and UserPromptSubmit hooks if
+#   missing from settings.json (guards against the file being reset)
 #
 # Always exits 0 — never blocks session start.
 
@@ -48,15 +48,22 @@ chmod +x "$CLAUDE_DIR/hooks/inject-constraints.py" 2>/dev/null || true
 
 # Restore Stop hook git-check
 cp "$CLONE_DIR/hooks/stop-hook-git-check.sh" "$CLAUDE_DIR/hooks/stop-hook-git-check.sh" 2>/dev/null || true
-chmod +x "$CLAUDE_DIR/hooks/stop-hook-git-check.sh" 2>/dev/null || true
+chmod +x "$CLONE_DIR/hooks/stop-hook-git-check.sh" 2>/dev/null || true
+
+# Restore PreToolUse gate hook
+cp "$CLONE_DIR/hooks/pre-tool-use-gate.sh" "$CLAUDE_DIR/hooks/pre-tool-use-gate.sh" 2>/dev/null || true
+chmod +x "$CLAUDE_DIR/hooks/pre-tool-use-gate.sh" 2>/dev/null || true
+
+# Restore PostToolBatch check hook
+cp "$CLONE_DIR/hooks/post-tool-batch-check.sh" "$CLAUDE_DIR/hooks/post-tool-batch-check.sh" 2>/dev/null || true
+chmod +x "$CLONE_DIR/hooks/post-tool-batch-check.sh" 2>/dev/null || true
 
 # Self-update: replace this script with the repo's latest version
 cp "$CLONE_DIR/hooks/restore-config.sh" "$CLAUDE_DIR/hooks/restore-config.sh" 2>/dev/null || true
 chmod +x "$CLAUDE_DIR/hooks/restore-config.sh" 2>/dev/null || true
 
-# Self-heal: re-register UserPromptSubmit hook if missing from settings.json
-# (guards against the file being reset to a baseline without our hook entry)
-python3 - <<'PYEOF'
+# Self-heal: re-register required hooks if missing from settings.json
+python3 << 'PYEOF'
 import json
 import os
 from pathlib import Path
@@ -71,20 +78,49 @@ try:
 except (json.JSONDecodeError, OSError):
     exit(0)
 
-hook_cmd = str(Path.home() / ".claude" / "hooks" / "inject-constraints.py")
-ups = settings.setdefault("hooks", {}).setdefault("UserPromptSubmit", [])
+hooks_dir = Path.home() / ".claude" / "hooks"
+changed = False
 
+# --- UserPromptSubmit: inject-constraints ---
+hook_cmd = str(hooks_dir / "inject-constraints.py")
+ups = settings.setdefault("hooks", {}).setdefault("UserPromptSubmit", [])
 already = any(
     any(os.path.expanduser(h.get("command", "")) == hook_cmd for h in entry.get("hooks", []))
     for entry in ups
 )
-
 if not already:
     ups.append({"hooks": [{"type": "command", "command": hook_cmd}]})
+    print("claude-config: UserPromptSubmit inject-constraints hook re-registered")
+    changed = True
+
+# --- PreToolUse: pre-tool-use-gate ---
+gate_cmd = str(hooks_dir / "pre-tool-use-gate.sh")
+ptu = settings["hooks"].setdefault("PreToolUse", [])
+already = any(
+    any(os.path.expanduser(h.get("command", "")) == gate_cmd for h in entry.get("hooks", []))
+    for entry in ptu
+)
+if not already:
+    ptu.append({"hooks": [{"type": "command", "command": gate_cmd, "timeout": 10}]})
+    print("claude-config: PreToolUse gate hook re-registered")
+    changed = True
+
+# --- PostToolBatch: post-tool-batch-check ---
+batch_cmd = str(hooks_dir / "post-tool-batch-check.sh")
+ptb = settings["hooks"].setdefault("PostToolBatch", [])
+already = any(
+    any(os.path.expanduser(h.get("command", "")) == batch_cmd for h in entry.get("hooks", []))
+    for entry in ptb
+)
+if not already:
+    ptb.append({"hooks": [{"type": "command", "command": batch_cmd, "timeout": 10}]})
+    print("claude-config: PostToolBatch check hook re-registered")
+    changed = True
+
+if changed:
     try:
         with open(settings_path, "w") as f:
             json.dump(settings, f, indent=4)
-        print("claude-config: UserPromptSubmit hook re-registered")
     except OSError:
         pass
 PYEOF
